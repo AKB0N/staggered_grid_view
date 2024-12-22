@@ -308,22 +308,14 @@ class RenderSliverStaggeredGrid extends RenderSliverVariableSizeBoxAdaptor {
         break;
       }
 
-      final childConstraints = geometry.getBoxConstraints(constraints);
-      RenderBox? child = addAndLayoutChild(index, childConstraints);
-
-      if (child != null) {
-        final childParentData =
-            child.parentData! as SliverVariableSizeBoxAdaptorParentData;
-        childParentData.layoutOffset = geometry.scrollOffset;
-        childParentData.crossAxisOffset = geometry.crossAxisOffset;
-        assert(childParentData.index == index);
-        geometry = geometry.copyWith(mainAxisExtent: paintExtentOf(child));
-      } else {
-        // If for some reason we can not create a child, we must not use it's geometry
-
-        // We should exit the for loop, because some layout failed and we should not continue processing.
-        reachedEnd = true;
-        break;
+      final bool hasTrailingScrollOffset = geometry.hasTrailingScrollOffset;
+      RenderBox? child;
+      if (!hasTrailingScrollOffset) {
+        // Layout the child to compute its tailingScrollOffset.
+        final constraints =
+            BoxConstraints.tightFor(width: geometry.crossAxisExtent);
+        child = addAndLayoutChild(index, constraints, parentUsesSize: true);
+        geometry = geometry.copyWith(mainAxisExtent: paintExtentOf(child!));
       }
 
       if (!visible &&
@@ -332,6 +324,19 @@ class RenderSliverStaggeredGrid extends RenderSliverVariableSizeBoxAdaptor {
         visible = true;
         leadingScrollOffset = geometry.scrollOffset;
         firstIndex = index;
+      }
+
+      if (visible && hasTrailingScrollOffset) {
+        child =
+            addAndLayoutChild(index, geometry.getBoxConstraints(constraints));
+      }
+
+      if (child != null) {
+        final childParentData =
+            child.parentData! as SliverVariableSizeBoxAdaptorParentData;
+        childParentData.layoutOffset = geometry.scrollOffset;
+        childParentData.crossAxisOffset = geometry.crossAxisOffset;
+        assert(childParentData.index == index);
       }
 
       if (visible && indices.contains(index)) {
