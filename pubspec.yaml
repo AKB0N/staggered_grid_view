@@ -29,19 +29,12 @@
 
 name: staggered_grid_view
 version: 0.0.1
-description: A Flutter package to dynamically change app theme based on phone wallpaper.
+description: A flexible and performant Flutter package for creating staggered grid layouts.
 repository: https://github.com/AKB0N/staggered_grid_view
 
 dependencies:
   flutter:
     sdk: flutter
-  material_color_utilities:
-  dynamic_color: ^1.7.0
-  provider: ^6.1.2
-  shared_preferences: ^2.3.4
-
-dependency_overrides:
-  material_color_utilities: ^0.12.0
 
 environment:
   sdk: '>=3.5.4 <4.0.0'
