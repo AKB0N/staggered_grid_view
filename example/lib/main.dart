@@ -30,129 +30,123 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _scrollController = ScrollController();
+  int currentIndex = 0;
+
+  List<Widget> screens = [
+    buildFixedCountGrid(),
+    buildMaxExtentGrid(),
+    buildInfiniteGrid(),
+    buildDynamicGrid(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Staggered Grid View Examples')),
       body: PrimaryScrollController(
-        controller: _scrollController,
-        child: ListView(
-          scrollDirection: Axis.vertical,
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, 120),
-          addAutomaticKeepAlives: true,
-          children: [
-            _buildExampleCard(
-              context,
-              title: 'Staggered Grid with Fixed Cross-Axis Count',
-              child: _buildFixedCountGrid(),
-            ),
-            _buildExampleCard(
-              context,
-              title: 'Staggered Grid with Max Cross-Axis Extent',
-              child: _buildMaxExtentGrid(),
-            ),
-            _buildExampleCard(
-              context,
-              title: 'Staggered Grid with Builder for Infinite Items',
-              child: _buildInfiniteGrid(),
-            ),
-            _buildExampleCard(
-              context,
-              title: 'Staggered Grid with different layouts',
-              child: _buildDynamicGrid(),
-            ),
-          ],
+          controller: _scrollController, child: screens[currentIndex]),
+      bottomNavigationBar: NavigationBar(
+        // key: navigationKey,
+        animationDuration: const Duration(milliseconds: 300),
+        selectedIndex: currentIndex,
+        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+        indicatorColor: Theme.of(context).colorScheme.onInverseSurface,
+        surfaceTintColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        overlayColor: WidgetStateColor.resolveWith(
+          (states) => Theme.of(context).colorScheme.onInverseSurface,
         ),
+        onDestinationSelected: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        destinations: <NavigationDestination>[
+          NavigationDestination(
+            selectedIcon: const Icon(Icons.grid_view_rounded),
+            icon: const Icon(Icons.grid_view_outlined),
+            label: 'FixedCountGrid',
+          ),
+          NavigationDestination(
+            selectedIcon: const Icon(Icons.grid_view_rounded),
+            icon: const Icon(Icons.grid_view_outlined),
+            label: 'MaxExtentGrid',
+          ),
+          NavigationDestination(
+            selectedIcon: const Icon(Icons.grid_view_rounded),
+            icon: const Icon(Icons.grid_view_outlined),
+            label: 'InfiniteGrid',
+          ),
+          NavigationDestination(
+            selectedIcon: const Icon(Icons.grid_view_rounded),
+            icon: const Icon(Icons.grid_view_outlined),
+            label: 'DynamicGrid',
+          ),
+        ],
       ),
     );
   }
+}
 
-  Widget _buildExampleCard(BuildContext context,
-      {required String title, required Widget child}) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 300,
-              child: child,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+Widget buildFixedCountGrid() {
+  return StaggeredGridView.count(
+    crossAxisCount: 4,
+    staggeredTiles: const [
+      StaggeredTile.count(2, 2),
+      StaggeredTile.count(1, 2),
+      StaggeredTile.count(1, 1),
+      StaggeredTile.count(1, 2),
+      StaggeredTile.count(2, 1),
+      StaggeredTile.count(1, 1),
+    ],
+    children: List.generate(
+        6,
+        (index) => Card(
+              color: Colors.blue.shade100,
+              child: Center(child: Text('Item $index')),
+            )),
+  );
+}
 
-  Widget _buildFixedCountGrid() {
-    return StaggeredGridView.count(
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 4,
-      staggeredTiles: const [
-        StaggeredTile.count(2, 2),
-        StaggeredTile.count(1, 2),
-        StaggeredTile.count(1, 1),
-        StaggeredTile.count(1, 2),
-        StaggeredTile.count(2, 1),
-        StaggeredTile.count(1, 1),
-      ],
-      children: List.generate(
-          6,
-          (index) => Card(
-                color: Colors.blue.shade100,
-                child: Center(child: Text('Item $index')),
-              )),
-    );
-  }
+Widget buildMaxExtentGrid() {
+  return StaggeredGridView.extentBuilder(
+    maxCrossAxisExtent: 200,
+    itemCount: 20,
+    staggeredTileBuilder: (index) =>
+        StaggeredTile.count((index % 3) + 1, (index % 5) + 1),
+    itemBuilder: (context, index) => Card(
+        color: Colors.green.shade100,
+        child: Center(child: Text('Item $index'))),
+  );
+}
 
-  Widget _buildMaxExtentGrid() {
-    return StaggeredGridView.extentBuilder(
-      maxCrossAxisExtent: 200,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: 20,
-      staggeredTileBuilder: (index) =>
-          StaggeredTile.count((index % 3) + 1, (index % 5) + 1),
-      itemBuilder: (context, index) => Card(
-          color: Colors.green.shade100,
-          child: Center(child: Text('Item $index'))),
-    );
-  }
+Widget buildInfiniteGrid() {
+  return StaggeredGridView.countBuilder(
+    crossAxisCount: 3,
+    itemCount: 100,
+    staggeredTileBuilder: (index) => StaggeredTile.count(1, 1 + (index % 3)),
+    itemBuilder: (context, index) => Card(
+        color: Colors.orange.shade100,
+        child: Center(child: Text('Item $index'))),
+  );
+}
 
-  Widget _buildInfiniteGrid() {
-    return StaggeredGridView.countBuilder(
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 3,
-      itemCount: 100,
-      staggeredTileBuilder: (index) => StaggeredTile.count(1, 1 + (index % 3)),
-      itemBuilder: (context, index) => Card(
-          color: Colors.orange.shade100,
-          child: Center(child: Text('Item $index'))),
-    );
-  }
-
-  Widget _buildDynamicGrid() {
-    return StaggeredGridView.custom(
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverStaggeredGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          staggeredTileBuilder: (index) {
-            if (index.isEven)
-              return StaggeredTile.count(1, 1);
-            else
-              return StaggeredTile.count(2, 2);
-          },
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8),
-      childrenDelegate: SliverChildBuilderDelegate(
-          (context, index) => Card(
-              color: Colors.red.shade100,
-              child: Center(child: Text('Item $index'))),
-          childCount: 30),
-    );
-  }
+Widget buildDynamicGrid() {
+  return StaggeredGridView.custom(
+    gridDelegate: SliverStaggeredGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        staggeredTileBuilder: (index) {
+          if (index.isEven)
+            return StaggeredTile.count(1, 1);
+          else
+            return StaggeredTile.count(2, 2);
+        },
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8),
+    childrenDelegate: SliverChildBuilderDelegate(
+        (context, index) => Card(
+            color: Colors.red.shade100,
+            child: Center(child: Text('Item $index'))),
+        childCount: 30),
+  );
 }
