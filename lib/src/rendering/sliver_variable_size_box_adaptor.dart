@@ -407,7 +407,7 @@ abstract class RenderSliverVariableSizeBoxAdaptor extends RenderSliver
   @override
   double childMainAxisPosition(RenderBox child) {
     try {
-      return childScrollOffset(child)! - (constraints.scrollOffset ?? 0.0);
+      return childScrollOffset(child)! - (constraints.scrollOffset);
     } on Exception catch (err) {
       debugPrint('$err, childMainAxisPosition: This not Error.');
       return 0.0;
